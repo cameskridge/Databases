@@ -1,0 +1,182 @@
+# Question 1
+
+SELECT Name, Age, Sales, Quota FROM SALESREPS
+WHERE name LIKE '%s';
+
+# Question 2
+
+SELECT Company, Description
+FROM Customers
+INNER JOIN Orders ON Customers.Cust_Num=Orders.Cust
+INNER JOIN Products ON Orders.Product=Products.Product_ID
+ORDER BY Company ASC;
+
+# Question 3
+
+SELECT Product_ID, Unit_Price*Qty_On_Hand as 'Total Value' 
+FROM Products
+ORDER BY Unit_Price*Qty_On_Hand DESC;
+
+# The question never stated product description or product ID, so I simply used product_ID as the "product."
+
+# Question 4 
+
+SELECT Count(Cust_Num) FROM Customers;
+
+# Question 5
+
+SELECT City FROM Offices
+WHERE Target <  550000;
+
+# The question simply asked to list the cities; not the cities and their targets
+
+# Question 6
+
+SELECT Orders.Order_Num, Orders.QTY, Customers.Company, Salesreps.Name 
+FROM Orders
+INNER JOIN Customers ON Orders.Cust=Customers.Cust_Num
+INNER JOIN Salesreps ON Customers.Cust_Rep=Salesreps.Emp_Num
+WHERE Total_Amount>20000;
+
+# Question 7
+
+SELECT DISTINCT Company, Description
+FROM Customers, Products
+WHERE Description LIKE 'Size%'
+ORDER BY Company;
+
+# I added "ORDER BY Company" to make it easier to see that there were no duplicate pairs
+
+# Question 8
+
+SELECT Office_Num, City, Region, Sales-Target AS 'Over/Under Target'
+FROM Offices;
+
+# There is no "offices" attribute, so I can only assume that means office number
+
+# Question 9
+
+SELECT Orders.Order_Num, Customers.Company, Customers.Credit_Limit, Orders.Total_Amount, Credit_Limit-Total_Amount AS 'Credit Remaining After Order' 
+FROM Customers
+INNER JOIN Orders ON Customers.Cust_Num=Orders.Cust
+WHERE Credit_Limit-Total_Amount < 0;
+
+# Question 10
+
+SELECT Name, SUM(Total_Amount)
+FROM Salesreps
+INNER JOIN Orders on Salesreps.Emp_Num=Orders.Rep
+GROUP BY Name
+ORDER BY SUM(Total_Amount) DESC;
+
+# Question 11
+
+Select Name, SUM(Qty*Total_Amount) AS 'Value'
+FROM Salesreps
+INNER JOIN Orders ON Salesreps.Emp_Num=Orders.Rep
+GROUP BY Name
+HAVING SUM(Qty*Total_Amount)>40000
+ORDER BY SUM(Qty*Total_Amount) DESC;
+
+# Question 12
+
+SELECT Office_Num, Target
+FROM Offices
+INNER JOIN Salesreps ON Offices.Office_Num=Salesreps.Rep_Office
+WHERE Target>Quota;
+
+# There is no "offices" attribute. I can only assume you meant office number
+
+# Question 13
+
+SELECT Name 
+FROM Salesreps
+WHERE Quota > 
+(SELECT Target 
+ FROM Offices
+ WHERE City='Denver');
+
+# The question only asked for names which met the conditions
+
+# Question 14
+
+SELECT  Order_Num, Company, Name AS 'TEMPORARY_SALES_REP'
+FROM Customers
+INNER JOIN Orders ON Customers.Cust_Num=Orders.Cust
+INNER JOIN Salesreps ON Orders.Rep=Salesreps.Emp_Num 
+WHERE Orders.Rep!=Customers.Cust_Rep
+ORDER BY Company;
+
+# I could have shown the regular customer rep, so that the difference in reps is clear, but the question did not ask for it.
+
+# Question 15
+
+drop table if exists ORDERS;
+drop table if exists PRODUCTS;
+drop table if exists CUSTOMERS;
+drop table if exists OFFICES;
+drop table if exists SALESREPS;
+
+create table ORDERS(
+ORDER_NUM varchar(6),
+ORDER_DATA date,
+CUST char(4),
+REP char(3),		
+MFR char(3),
+PRODUCT varchar(10),
+QTY int, 
+TOTAL_AMOUNT decimal (10,2),
+constraint pk_orders primary key (ORDER_NUM);
+
+ALTER TABLE ORDERS
+ADD CONSTRAINT FK_Product
+FOREIGN KEY (PRODUCT) REFERENCES Products(PRODUCT_ID)
+ADD CONSTRAINT FK_MFR
+FOREIGN KEY (MFR) REFERENCES Products(MFR_ID)
+ADD CONSTRAINT FK_CUSTNO
+FOREIGN KEY (CUST) REFERENCES Customers(Cust_Num)
+);
+
+create table PRODUCTS(
+MFR_ID char(3),
+PRODUCT_ID varchar(10),
+DESCRIPTION varchar(20),
+UNIT_PRICE decimal (10,2),
+QTY_ON_HAND int,
+constraint pk_products primary key(MFR_ID, PRODUCT_ID)
+);
+
+create table CUSTOMERS(
+CUST_NUM char(4),
+COMPANY varchar(20),
+CUST_REP char(3),
+CREDIT_LIMIT decimal (10,2),
+constraint pk_customers primary key (CUST_NUM)
+);
+
+create table OFFICES(
+OFFICE_NUM char(2),
+CITY varchar(20),
+REGION varchar(10),
+MGR char(3),
+TARGET decimal (10,2),
+SALES decimal (10,2),
+constraint pk_offices primary key (OFFICE_NUM)
+);
+
+create table SALESREPS(
+EMP_NUM char(3),
+NAME varchar(20),
+AGE int,
+REP_OFFICE char(2),
+TITLE varchar(10),
+MANAGER char(3), 
+HIRE_DATE date,
+QUOTA decimal (10,2),
+SALES decimal (10,2),
+constraint pk_salesRep primary key (EMP_NUM)
+
+ALTER TABLE Salesreps
+ADD CONSTRAINT FK_Offno
+FOREIGN KEY (Offno) REFERENCES Offices(OFFICE_NUM)
+);
